@@ -1,0 +1,3 @@
+var _user$project$Billing$main = {
+	main: _elm_lang$html$Html$text('Hello from Death')
+};
