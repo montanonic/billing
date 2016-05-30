@@ -22,5 +22,5 @@ import "phoenix_html"
 
 
 // Elm
-  var node = document.getElementById('elm-main');
-  var app = Elm.Billing.embed(node);
+  const elmDiv = document.querySelector("#elm-container");
+  const elmApp = Elm.Billing.embed(elmDiv);
