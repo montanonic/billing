@@ -27,4 +27,4 @@ config :logger, :console,
 import_config "#{Mix.env}.exs"
 
 # Google API configuration variables
-import_config "google_auth_vars.exs"
+import_config "google_auth_secret.exs"

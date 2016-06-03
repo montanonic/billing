@@ -1,6 +1,127 @@
 module Billing exposing(..)
 
-import Html exposing(..)
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (..)
+import Http
+import Json.Decode as Json
+import Navigation as Nav
+import Task
+
+
 
 main =
-  text "Hello from Death"
+  Nav.program (Nav.makeParser .username)
+    { init = init
+    , subscriptions = subscriptions
+    , update = update
+    , urlUpdate = urlUpdate
+    , view = view
+    }
+
+
+
+-- MODEL
+
+
+type alias Model =
+  { empty: Maybe Int
+  }
+
+
+init : data -> (Model, Cmd Msg)
+init _ =
+  ( Model Nothing
+  , Cmd.none
+  )
+
+
+baseUrl =
+    "http://localhost:4000"
+
+
+loginUrl =
+    baseUrl ++ "/auth"
+
+
+
+-- UPDATE
+
+
+type Msg
+  = NoOp
+
+
+update : Msg -> Model -> (Model, Cmd Msg)
+update action model =
+  case action of
+    NoOp ->
+      ( model
+      , Cmd.none
+      )
+
+
+
+-- URL UPDATE
+
+
+urlUpdate : data -> model -> (model, Cmd msg)
+urlUpdate data model =
+    ( model
+    , Cmd.none
+    )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+  Sub.none
+
+
+
+-- VIEW
+
+
+view : Model -> Html Msg
+view model =
+  div []
+    [ a [ href loginUrl ] [ text "log in" ]
+    ]
+
+
+
+-- HTTP
+
+
+loginRequest : Task RawError Response
+loginRequest =
+    Http.send
+    { verb = "POST"
+    , headers =
+        [ ("Origin", "http://elm-lang.org")
+        , ("Access-Control-Request-Method", "POST")
+        , ("Access-Control-Request-Headers", "X-Custom-Header")
+        ]
+    , url = "http://example.com/hats"
+    , body = empty
+    }
+
+
+
+{-
+getRandomGif : String -> Cmd Msg
+getRandomGif topic =
+  let
+    url =
+      "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
+  in
+    Task.perform FetchFail FetchSucceed (Http.get decodeGifUrl url)
+
+
+decodeGifUrl : Json.Decoder String
+decodeGifUrl =
+  Json.at ["data", "image_url"] Json.string
+-}

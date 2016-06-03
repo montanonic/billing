@@ -1,3 +1,53 @@
-var _user$project$Billing$main = {
-	main: _elm_lang$html$Html$text('Hello from Death')
+var _user$project$Billing$subscriptions = function (model) {
+	return _elm_lang$core$Platform_Sub$none;
 };
+var _user$project$Billing$urlUpdate = F2(
+	function (data, model) {
+		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+	});
+var _user$project$Billing$update = F2(
+	function (action, model) {
+		var _p0 = action;
+		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+	});
+var _user$project$Billing$baseUrl = 'http://localhost:4000';
+var _user$project$Billing$loginUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth');
+var _user$project$Billing$view = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		_elm_lang$core$Native_List.fromArray(
+			[]),
+		_elm_lang$core$Native_List.fromArray(
+			[
+				A2(
+				_elm_lang$html$Html$a,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$href(_user$project$Billing$loginUrl)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('log in')
+					]))
+			]));
+};
+var _user$project$Billing$Model = function (a) {
+	return {empty: a};
+};
+var _user$project$Billing$init = function (_p1) {
+	return {
+		ctor: '_Tuple2',
+		_0: _user$project$Billing$Model(_elm_lang$core$Maybe$Nothing),
+		_1: _elm_lang$core$Platform_Cmd$none
+	};
+};
+var _user$project$Billing$main = {
+	main: A2(
+		_elm_lang$navigation$Navigation$program,
+		_elm_lang$navigation$Navigation$makeParser(
+			function (_) {
+				return _.username;
+			}),
+		{init: _user$project$Billing$init, subscriptions: _user$project$Billing$subscriptions, update: _user$project$Billing$update, urlUpdate: _user$project$Billing$urlUpdate, view: _user$project$Billing$view})
+};
+var _user$project$Billing$NoOp = {ctor: 'NoOp'};

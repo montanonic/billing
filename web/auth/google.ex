@@ -17,12 +17,21 @@ defmodule Billing.GoogleAuth do
 
   # Public API
 
+  @doc """
+  A Google OAuth2 client entity.
+  """
   def client do
+    # we store the client id and secret in a file excluded from version control
+    # for safety. The line below fetches those values, and subsequently we
+    # merge them with the config defined above.
     Application.get_env(:billing, Billing.GoogleAuth)
     |> Keyword.merge(config)
     |> OAuth2.Client.new
   end
 
+  @doc """
+  Generates the URL for the Google authorization page.
+  """
   def authorization_url!(params \\ []) do
     OAuth2.Client.authorize_url!(client, params)
   end
