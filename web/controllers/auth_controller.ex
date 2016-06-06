@@ -44,13 +44,17 @@ defmodule Billing.AuthController do
     # the access token as well.
     conn
     |> put_session(:current_user, user)
-    |> put_session(:access_token, token.access_token)
+    # We need to also be sure to store the access token on the backend. Whether
+    # or not it's valuable to store it in the session for quick access is
+    # unclear. For now, I'll opt for simplicity and omit it from the session.
+    # |> put_session(:access_token, token.access_token)
     # assuming that user, allows access to basic data.. user["name"]
     # if this is the case, I figured a private function to check/add a new user to our db
     |> create_user(user)
     |> send_resp(:ok, "you have logged in")
   end
 
+  # This function is outdated, I believe.
   defp get_user!(token) do
     {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
       "https://www.googleapis.com/plus/v1/people/me")

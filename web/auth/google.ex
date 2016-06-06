@@ -7,7 +7,7 @@ defmodule Billing.GoogleAuth do
   alias OAuth2.Strategy.AuthCode
 
   defp config do
-    [strategy: Billing.GoogleAuth,
+    [strategy: __MODULE__,
      site: "https://accounts.google.com",
      redirect_uri: "http://localhost:4000/auth/callback",
      authorize_url: "/o/oauth2/v2/auth",
