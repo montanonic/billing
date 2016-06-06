@@ -2,8 +2,8 @@ defmodule Billing.GoogleAuth do
   @moduledoc """
   An OAuth2 strategy for Google.
   """
-  use OAuth2.Strategy
-
+  import OAuth2.Client
+  import OAuth2.Strategy
   alias OAuth2.Strategy.AuthCode
 
   defp config do
@@ -29,11 +29,15 @@ defmodule Billing.GoogleAuth do
     |> OAuth2.Client.new
   end
 
+  @calendar "https://www.googleapis.com/auth/calendar.readonly"
+
   @doc """
-  Generates the URL for the Google authorization page.
+  Generates the URL for the Google authorization page. For our app we use three
+  scopes: Profile, Email, and Read-only Calendar, with offline access.
   """
-  def authorization_url!(params \\ []) do
-    OAuth2.Client.authorize_url!(client, params)
+  def authorization_url! do
+    OAuth2.Client.authorize_url!(client, scope: "profile email #{@calendar}",
+      access_type: "offline")
   end
 
   def get_token!(params \\ [], headers \\ []) do
@@ -43,8 +47,10 @@ defmodule Billing.GoogleAuth do
 
   # Strategy Callbacks
 
-  def authorize_url(client, params) do
-    AuthCode.authorize_url(client, params)
+
+  def authorize_url(client, params \\ []) do
+    client
+    |> AuthCode.authorize_url(params)
   end
 
   def get_token(client, params, headers) do

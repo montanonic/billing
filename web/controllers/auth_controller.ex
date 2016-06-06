@@ -34,6 +34,7 @@ defmodule Billing.AuthController do
     user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
       "https://www.googleapis.com/plus/v1/people/me")
 
+
     # Store the user in the session under `:current_user'.
     # In most cases, we'd probably just store the user's ID that can be used
     # to fetch from the database. In this case, since this example app has no
@@ -44,12 +45,35 @@ defmodule Billing.AuthController do
     conn
     |> put_session(:current_user, user)
     |> put_session(:access_token, token.access_token)
-    |> send_resp(:ok, "You're now logged-in")
+    # assuming that user, allows access to basic data.. user["name"]
+    # if this is the case, I figured a private function to check/add a new user to our db
+    |> create_user(user)
+    |> send_resp(:ok, "you have logged in")
   end
 
   defp get_user!(token) do
     {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
       "https://www.googleapis.com/plus/v1/people/me")
     %{name: user["name"], avatar: user["picture"]}
+  end
+
+
+  defp create_user(conn, %{"name" => name, "id" => id}) do
+    # if there is a user.goodle_id that is equal to the id received from Google API call
+    # then set = user
+    user = Repo.one(User.get_by_google_id(id))
+
+    # [work in progress] if no user with that google id exist then create a new user in db
+    # I think the recent update to elixir has a better way of handling nested case statements
+    user_params = %{
+      user: name,
+      id: id
+    }
+
+    changeset = User.changeset(%Billing.User{}, user_params)
+    case Repo.insert(changeset) do
+      {:ok, user} ->
+        conn
+    end
   end
 end
