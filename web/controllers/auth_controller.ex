@@ -66,7 +66,7 @@ defmodule Billing.AuthController do
       id: id
     }
 
-    changeset = User.changeset%{User{}, user_params}
+    changeset = User.changeset(%Billing.User{}, user_params)
     case Repo.insert(changeset) do
       {:ok, user} ->
         conn

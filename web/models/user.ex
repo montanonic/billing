@@ -17,8 +17,8 @@ defmodule Billing.User do
     |> validate_required([:name, :google_id])
   end
 
-  def get_by_google_id(google_id) do
-    from u in Billing.User,
-    where: u.google_id == google_id
-  end
+  #def get_by_google_id(google_id) do
+  #  from u in Billing.User,
+  #  where: u.google_id == google_id
+  #end
 end
