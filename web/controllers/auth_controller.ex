@@ -34,6 +34,7 @@ defmodule Billing.AuthController do
     user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
       "https://www.googleapis.com/plus/v1/people/me")
 
+
     # Store the user in the session under `:current_user'.
     # In most cases, we'd probably just store the user's ID that can be used
     # to fetch from the database. In this case, since this example app has no
@@ -44,12 +45,31 @@ defmodule Billing.AuthController do
     conn
     |> put_session(:current_user, user)
     |> put_session(:access_token, token.access_token)
-    |> send_resp(:ok, "You're now logged-in")
+    |> create_user(user)
+    |> send_resp(:ok, "you have logged in")
   end
 
   defp get_user!(token) do
     {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
       "https://www.googleapis.com/plus/v1/people/me")
     %{name: user["name"], avatar: user["picture"]}
+  end
+
+
+  # not sure what to do here. Was thinking we should check and see if user already exists in our db
+  # based on google_id
+  defp create_user(conn, %{"name" => name, "id" => id}) do
+    user = Repo.one(User.get_by_google_id(id))
+
+    user_params = %{
+      user: name,
+      id: id
+    }
+
+    changeset = User.changeset%{User{}, user_params}
+    case Repo.insert(changeset) do
+      {:ok, user} ->
+        conn
+    end
   end
 end

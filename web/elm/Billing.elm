@@ -88,7 +88,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ a [ href loginUrl ] [ text "log in" ]
+    [ a [ href loginUrl ] [ text "Sign in with Google" ]
     ]
 
 
@@ -96,18 +96,6 @@ view model =
 -- HTTP
 
 
-loginRequest : Task RawError Response
-loginRequest =
-    Http.send
-    { verb = "POST"
-    , headers =
-        [ ("Origin", "http://elm-lang.org")
-        , ("Access-Control-Request-Method", "POST")
-        , ("Access-Control-Request-Headers", "X-Custom-Header")
-        ]
-    , url = "http://example.com/hats"
-    , body = empty
-    }
 
 
 

@@ -64,8 +64,8 @@ update action model =
 view : Model -> Html Msg
 view model =
   div []
-    [ h2 [] [text model.topic]
-    , button [ onClick MorePlease ] [ text "More Please!" ]
+    [ h2 [] [text "Testing Authentication"]
+    , button [ onClick MorePlease ] [ text "Google" ]
     , br [] []
     , img [src model.gifUrl] []
     ]
@@ -88,7 +88,7 @@ getRandomGif : String -> Cmd Msg
 getRandomGif topic =
   let
     url =
-      "http://api.giphy.com/v1/gifs/random?api_key=dc6zaTOxFJmzC&tag=" ++ topic
+      "localhost:4000"
   in
     Task.perform FetchFail FetchSucceed (Http.get decodeGifUrl url)
 
@@ -96,3 +96,4 @@ getRandomGif topic =
 decodeGifUrl : Json.Decoder String
 decodeGifUrl =
   Json.at ["data", "image_url"] Json.string
+

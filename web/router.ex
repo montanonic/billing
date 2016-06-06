@@ -16,6 +16,7 @@ defmodule Billing.Router do
   pipeline :spa do # Single-page App
     plug :accepts, ["json"]
     plug :fetch_session
+    plug Billing.Auth, repo: Billing.Repo
   end
 
   scope "/", Billing do
