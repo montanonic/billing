@@ -45,6 +45,8 @@ defmodule Billing.AuthController do
     conn
     |> put_session(:current_user, user)
     |> put_session(:access_token, token.access_token)
+    # assuming that user, allows access to basic data.. user["name"]
+    # if this is the case, I figured a private function to check/add a new user to our db
     |> create_user(user)
     |> send_resp(:ok, "you have logged in")
   end
@@ -56,11 +58,13 @@ defmodule Billing.AuthController do
   end
 
 
-  # not sure what to do here. Was thinking we should check and see if user already exists in our db
-  # based on google_id
   defp create_user(conn, %{"name" => name, "id" => id}) do
+    # if there is a user.goodle_id that is equal to the id received from Google API call
+    # then set = user
     user = Repo.one(User.get_by_google_id(id))
 
+    # [work in progress] if no user with that google id exist then create a new user in db
+    # I think the recent update to elixir has a better way of handling nested case statements
     user_params = %{
       user: name,
       id: id
