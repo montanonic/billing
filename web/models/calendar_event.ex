@@ -15,6 +15,8 @@ defmodule Billing.CalendarEvent do
   """
 
   schema "calendar_events" do
+    belongs_to :user, Billing.User
+
     field :kind, :string
     field :etag, :string
     field :ident, :string

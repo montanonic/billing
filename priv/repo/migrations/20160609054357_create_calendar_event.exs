@@ -28,6 +28,7 @@ defmodule Billing.Repo.Migrations.CreateCalendarEvent do
 
       timestamps
     end
+    create index(:calendar_events, [:user_id])
 
   end
 end
