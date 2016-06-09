@@ -7,7 +7,7 @@ defmodule Billing.AuthController do
 
   def index(conn, _params) do
     redirect conn,
-      external: GoogleAuth.authorization_url!(scope: "profile")
+      external: GoogleAuth.authorization_url!(scope: "https://www.googleapis.com/auth/userinfo.email")
   end
 
   @doc """
@@ -20,20 +20,21 @@ defmodule Billing.AuthController do
   end
 
   @doc """
-
   This is the the callback URL that the OAuth2 provider will redirect the user
   back to with a `code` that will be used to request an access token. The access
   token will then be used to access protected resources on behalf of the user.
-
   """
+  require IEx
   def callback(conn, %{"code" => code}) do
     # Exchange an auth code for an access token
     token = GoogleAuth.get_token!(code: code)
 
     # Request the user's data with the access token
-    user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
-      "https://www.googleapis.com/plus/v1/people/me")
+    #user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token)
+    user = OAuth2.AccessToken.get(token,
+      "https://www.googleapis.com/plus/v1/people/me/openIdConnect")
 
+    IEx.pry
 
     # Store the user in the session under `:current_user'.
     # In most cases, we'd probably just store the user's ID that can be used
@@ -50,7 +51,7 @@ defmodule Billing.AuthController do
     # |> put_session(:access_token, token.access_token)
     # assuming that user, allows access to basic data.. user["name"]
     # if this is the case, I figured a private function to check/add a new user to our db
-    |> create_user(user)
+    #|> create_user(user)
     |> send_resp(:ok, "you have logged in")
   end
 
