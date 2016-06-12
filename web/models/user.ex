@@ -21,24 +21,19 @@ defmodule Billing.User do
   end
 
   @doc """
-  Builds a changeset based on the `struct` and `params`.
+  For account creation.
   """
-  def changeset(struct, params \\ %{}) do
+  def registration_changeset(struct, params \\ %{}) do
     struct
     |> cast(params,
       ~w|identity refresh_token name given_name family_name google_email
         preferred_email|a)
     |> validate_required(
-      ~w|identity name google_email|a)
+      ~w|identity refresh_token name google_email|a)
   end
 
   def create_new_user(params) do
-    changeset(new, params)
+    registration_changeset(new, params)
     |> Repo.insert
   end
-
-  #def get_by_google_id(google_id) do
-  #  from u in Billing.User,
-  #  where: u.google_id == google_id
-  #end
 end

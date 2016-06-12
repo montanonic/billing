@@ -7,6 +7,7 @@ defmodule Billing.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Billing.Auth, repo: Billing.Repo
   end
 
   pipeline :api do
@@ -16,7 +17,7 @@ defmodule Billing.Router do
   pipeline :spa do # Single-page App
     plug :accepts, ["json"]
     plug :fetch_session
-    #plug Billing.Auth, repo: Billing.Repo
+    plug Billing.Auth, repo: Billing.Repo
   end
 
   scope "/", Billing do
@@ -30,10 +31,7 @@ defmodule Billing.Router do
 
     get "/login", AuthController, :login
     get "/callback", AuthController, :callback
-    get "/logout", AuthController, :logout
-
-    get "/calendar", AuthController, :calendar_access
-    get "/offline", AuthController, :offline_access
+    delete "/logout", AuthController, :logout
   end
 
   # Other scopes may use custom stacks.

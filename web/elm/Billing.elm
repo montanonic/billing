@@ -44,14 +44,6 @@ loginUrl : String
 loginUrl =
     baseUrl ++ "/auth/login"
 
-accessCalendarUrl : String
-accessCalendarUrl =
-    baseUrl ++ "/auth/calendar"
-
-offlineAccessUrl : String
-offlineAccessUrl =
-    baseUrl ++ "/auth/offline"
-
 logoutUrl : String
 logoutUrl =
     baseUrl ++ "/auth/logout"
@@ -102,8 +94,6 @@ view : Model -> Html Msg
 view model =
   div []
     [ a [ href loginUrl ] [ text "Sign in or create an account through Google; " ]
-    , a [ href accessCalendarUrl ] [ text "Authorize calendar access; " ]
-    , a [ href offlineAccessUrl ] [ text "Authorize offline access; " ]
     , a [ href logoutUrl ] [ text "Logout" ]
     ]
 

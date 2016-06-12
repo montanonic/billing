@@ -5,6 +5,18 @@ defmodule Billing.Mixfile do
     [app: :billing,
      version: "0.0.1",
      elixir: "~> 1.2",
+     dialyzer: [
+       plt_add_apps: ~w|phoenix phoenix_pubsub phoenix_ecto phoenix_html
+        phoenix_live_reload cowboy httpoison absinthe absinthe_plug joken
+        plug ecto|,
+       flags: ["-Wunmatched_returns",
+               "-Werror_handling",
+               "-Wrace_conditions", #can potentially not finish evaluating
+               "-Wunderspecs",
+               "-Wunknown",
+               "-Woverspecs",
+               "-Wspecdiffs"
+              ]],
      elixirc_paths: elixirc_paths(Mix.env),
      compilers: [:phoenix, :gettext] ++ Mix.compilers,
      build_embedded: Mix.env == :prod,
@@ -18,8 +30,8 @@ defmodule Billing.Mixfile do
   # Type `mix help compile.app` for more information.
   def application do
     [mod: {Billing, []},
-     applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :httpoison, :oauth2, :joken]]
+     applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger,
+                    :gettext, :phoenix_ecto, :postgrex, :httpoison, :joken]]
   end
 
   # Specifies which paths to compile per environment.
@@ -38,11 +50,12 @@ defmodule Billing.Mixfile do
      {:phoenix_live_reload, "~> 1.0", only: :dev},
      {:gettext, "~> 0.11"},
      {:cowboy, "~> 1.0"},
+     # added deps
      {:httpoison, "~> 0.8.3"},
      {:absinthe, "~> 1.1"},
      {:absinthe_plug, "~> 1.1"},
-     {:oauth2, "~> 0.6.0"},
      {:joken, "~> 1.2"},
+     {:dialyxir, "~> 0.3.3", only: [:dev]},
     ]
   end
 

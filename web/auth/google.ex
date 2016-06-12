@@ -1,5 +1,4 @@
 defmodule Billing.GoogleAuth do
-
   @moduledoc """
   Everything in this module is derived from following the steps laid out here:
   https://developers.google.com/identity/protocols/OAuth2WebServer
@@ -14,6 +13,9 @@ defmodule Billing.GoogleAuth do
 
   Some design ideas were taken from the OAuth2 Elixir library.
   """
+
+  @type access_token :: String.t
+
 
   ###
   # Step 1: Set up basic configuration
@@ -32,7 +34,7 @@ defmodule Billing.GoogleAuth do
   # Step 2: Redirect to Google's OAuth 2.0 server
   ###
 
-  @doc """
+  @docp """
   ## Do not use this function directly.
 
   Please use and consult the documentation for
@@ -76,12 +78,11 @@ defmodule Billing.GoogleAuth do
   end
 
   @doc """
-  Wraps up all required authorizations at once. An alternative to incremental
-  authorization.
+  Sets the authorization parameters for everything that our app requires upon
+  registration.
   """
-  def default_params do
-    %{"scope" =>
-        "profile https://www.googleapis.com/auth/calendar.readonly",
+  def registration_params do
+    %{"scope" => "profile https://www.googleapis.com/auth/calendar.readonly",
       "access_type" => "offline",
     }
   end
@@ -164,7 +165,7 @@ defmodule Billing.GoogleAuth do
     |> Phoenix.Controller.redirect(external: auth_url)
   end
 
-  @doc """
+  @docp """
   http://erlang.org/doc/man/crypto.html#strong_rand_bytes-1
   See https://developers.google.com/identity/protocols/OpenIDConnect#server-flow
   for the motivation.
@@ -189,7 +190,6 @@ defmodule Billing.GoogleAuth do
     :crypto.strong_rand_bytes(32)
     |> Base.encode64
   end
-
 
 
   ###
@@ -231,17 +231,13 @@ defmodule Billing.GoogleAuth do
     "Host" => "www.googleapis.com",
     "Content-Type" => "application/x-www-form-urlencoded",
     }
+  @spec callback_procedure!(String.t) ::
+    {:existing_user | :current_user, Billing.User.t, access_token} |
+    {:error, String.t}
   def callback_procedure(conn, %{"code" => code, "state" => state}) do
     case Plug.Conn.get_session(conn, :anti_forgery_token) do
       ^state ->
-        {is_user_new_or_existing, user, access_token} =
-          get_authorization_response!(code)
-
-        conn
-        |> Plug.Conn.put_session(:current_user, user)
-        |> Plug.Conn.put_session(:access_token, access_token)
-
-        is_user_new_or_existing
+        get_authorization_response!(code)
 
       _ ->
         {:error, "state parameter was not equal to the anti_forgery_token " <>
@@ -261,19 +257,13 @@ defmodule Billing.GoogleAuth do
   # to ask for email access, then for calendar access, then for offline access,
   # if we suspect our market will want all of those features basically no matter
   # what.
-  def callback_procedure(conn, %{"error" => _}) do
+  def callback_procedure!(%{"error" => _}) do
     {:error, "access denied"}
   end
 
-  @doc """
-  This function fulfills steps 3 and 4 of OpenIDConnect's server flow:
+  @docp """
+  This function fulfills steps 3 through 5 of OpenIDConnect's server flow:
   https://developers.google.com/identity/protocols/OpenIDConnect#server-flow
-
-  TODO: Update this section of the docs
-    Takes an authorization code and returns an authorization response, containing
-    the `access_token` we can use to make Google API queries on a user's behalf,
-    along with a `refresh_token` if the the `access_type` parameter in the
-    authorization url was set to `"offline"`.
 
   Returns a tuple containing either the `:existing_user` atom if the user is
   already registered with our application, or `:new_user` otherwise, which we
@@ -286,30 +276,34 @@ defmodule Billing.GoogleAuth do
   See http://stackoverflow.com/questions/8311836/how-to-identify-a-google-oauth2-user/13016081#13016081
   for more information on this, along with the `decode_id_token` function.
   """
-  def get_authorization_response!(code) do
+  @spec get_authorization_response!(String.t) ::
+    {:existing_user | :current_user, Billing.User.t, access_token}
+  defp get_authorization_response!(code) do
+    # params for making the callback request to exchange the authorization code
+    # for an access token (and potentially a refresh token as well)
     parameters =
       %{"code" => code,
         "client_id" => @client_id,
         "client_secret" => @client_secret,
         "redirect_uri" => @redirect_uri,
         "grant_type" => "authorization_code",
-      } |> Map.to_list
+      }
 
-    response =
+    callback_response =
       HTTPoison.post!(@token_url, "", @callback_headers, params: parameters)
 
-    %{"access_token" => access_token,
-      #"refresh_token" => refresh_token,
-      "id_token" => id_token,
-    } = Poison.decode!(response.body)
+    callback_response_json =
+      Poison.decode!(callback_response.body)
 
-    Tuple.append(fetch_or_create_user(id_token), access_token)
+    fetch_or_create_user!(callback_response_json)
   end
 
-  @doc """
-  Takes an `id_token`,
-  (http://stackoverflow.com/questions/31099579/google-oauth-what-do-the-various-fields-in-id-token-stand-for#31099850)
-  which contains identifying information about the authenticated user, which we
+
+  @docp """
+  Takes the decoded response to the google callback request, which must contain
+  an `id_token`:
+  (http://stackoverflow.com/questions/31099579/google-oauth-what-do-the-various-fields-in-id-token-stand-for#31099850
+  The `id_token` contains identifying information about the authenticated user, which we
   can use to verify an existing user in our database, or to create a new account
   for them otherwise. This function will automatically do either, returning a
   response of
@@ -334,12 +328,15 @@ defmodule Billing.GoogleAuth do
 
   TODO: (maybe) Use Google oauth certs to actually verify this token.
   """
-  def fetch_or_create_user(id_token) do
+  @spec fetch_or_create_user!(String.t) ::
+    {:existing_user | :current_user, Billing.User.t, access_token}
+  defp fetch_or_create_user!(response) do
+    # See the SO link on an `id_token` for context on "sub".
     %{"sub" => unique_identifier} = identity =
-      Joken.token(id_token)
+      Joken.token(response["id_token"])
       |> Joken.peek
 
-    # lookup the user by their identity to see if they are an existing user or
+    # lookup the user by their identity to see if they are an existing user, or
     # a new user
     case Billing.Repo.get_by(Billing.User, identity: unique_identifier) do
       nil ->
@@ -347,6 +344,7 @@ defmodule Billing.GoogleAuth do
         {:ok, new_user} =
           Billing.User.create_new_user(
             %{identity: unique_identifier,
+              refresh_token: response["refresh_token"],
               name: identity["name"],
               # we check to make sure their email is identified; an error will
               # be thrown otherwise
@@ -355,10 +353,10 @@ defmodule Billing.GoogleAuth do
               family_name: identity["family_name"],
             }
           )
-        {:new_user, new_user}
+        {:new_user, new_user, response["access_token"]}
 
       user ->
-        {:existing_user, user}
+        {:existing_user, user, response["access_token"]}
     end
   end
 end
