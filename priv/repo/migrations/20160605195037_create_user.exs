@@ -3,6 +3,7 @@ defmodule Billing.Repo.Migrations.CreateUser do
 
   def change do
     create table(:users) do
+      # the user's name tied to their google account
       add :name, :string
       # the email tied to their google account used to sign in
       add :google_email, :string

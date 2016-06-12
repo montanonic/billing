@@ -2,14 +2,16 @@ defmodule Billing.User do
   use Billing.Web, :model
 
   schema "users" do
+    field :identity, :string
+    field :refresh_token, :string
     field :name, :string
+    field :given_name, :string
+    field :family_name, :string
     # the email tied to their google account used to sign in
     field :google_email, :string
     # the address they prefer any emails to be sent to; if null, we default
     # to emailing to their google address.
     field :preferred_email, :string
-    field :google_id, :string
-    field :access_token, :string
 
     timestamps
   end
@@ -20,8 +22,10 @@ defmodule Billing.User do
   def changeset(struct, params \\ %{}) do
     struct
     |> cast(params,
-      ~w|name google_email preferred_email google_id access_token|a)
-    |> validate_required(~w|name google_email google_id access_token|a)
+      ~w|identity refresh_token name given_name family_name google_email
+        preferred_email|a)
+    |> validate_required(
+      ~w|identity refresh_token name google_email|a)
   end
 
   #def get_by_google_id(google_id) do
