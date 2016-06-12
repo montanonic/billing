@@ -5,15 +5,49 @@ defmodule Billing.AuthController do
   # See https://developers.google.com/+/web/api/rest/oauth#authorization-scopes
   # for information on scopes.
 
-  def index(conn, _params) do
-    redirect conn,
-      external: GoogleAuth.authorization_url!(scope: "https://www.googleapis.com/auth/userinfo.email")
+  @doc """
+  Authenticates the user, and if successfuly logs the user in if they already
+  have an account, and otherwise creates a new account.
+  """
+  def login(conn, _params) do
+    GoogleAuth.redirect_to_secure_authorization_url(conn,
+      %{"scope" => "profile",
+        "include_granted_scopes" => "true",
+      }
+    )
+  end
+
+  @doc """
+  TODO: This route should only be authorized if the user is already logged-in.
+
+  Grants us access to the user's calendar
+  """
+  def calendar(conn, _params) do
+    GoogleAuth.redirect_to_secure_authorization_url(conn,
+      %{"scope" => "calendar",
+        "include_granted_scopes" => "true",
+      }
+    )
+  end
+
+  @doc """
+  TODO: This route should only be authorized if the user is already logged-in.
+
+  Grants us offline access to the user's authorized resources. We'll use this
+  to query their Calendar for updates.
+  """
+  def offline(conn, _params) do
+    GoogleAuth.redirect_to_secure_authorization_url(conn,
+      %{"include_granted_scopes" => "true",
+        "access_type" => "offline",
+      }
+    )
   end
 
   @doc """
   Logs the user out by dropping their session.
   """
-  def delete(conn, _params) do
+  def logout(conn, _params) do
     conn
     |> configure_session(drop: true)
     |> send_resp(:ok, "logged out")
@@ -24,17 +58,17 @@ defmodule Billing.AuthController do
   back to with a `code` that will be used to request an access token. The access
   token will then be used to access protected resources on behalf of the user.
   """
-  require IEx
-  def callback(conn, %{"code" => code}) do
-    # Exchange an auth code for an access token
-    token = GoogleAuth.get_token!(code: code)
+  def callback(conn, params) do
+    result = GoogleAuth.callback_procedure(conn, params)
 
-    # Request the user's data with the access token
-    #user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token)
-    user = OAuth2.AccessToken.get(token,
-      "https://www.googleapis.com/plus/v1/people/me/openIdConnect")
+    # TODO: the result tells us if the user was an existing user, or is a new
+    # one; we should probably use it in the future
 
-    IEx.pry
+    IO.inspect result
+
+    conn
+    |> send_resp(:ok, "you have logged in")
+  end
 
     # Store the user in the session under `:current_user'.
     # In most cases, we'd probably just store the user's ID that can be used
@@ -43,8 +77,8 @@ defmodule Billing.AuthController do
     #
     # If you need to make additional resource requests, you may want to store
     # the access token as well.
-    conn
-    |> put_session(:current_user, user)
+    #conn
+    #|> put_session(:current_user, user)
     # We need to also be sure to store the access token on the backend. Whether
     # or not it's valuable to store it in the session for quick access is
     # unclear. For now, I'll opt for simplicity and omit it from the session.
@@ -52,33 +86,5 @@ defmodule Billing.AuthController do
     # assuming that user, allows access to basic data.. user["name"]
     # if this is the case, I figured a private function to check/add a new user to our db
     #|> create_user(user)
-    |> send_resp(:ok, "you have logged in")
-  end
-
-  # This function is outdated, I believe.
-  defp get_user!(token) do
-    {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
-      "https://www.googleapis.com/plus/v1/people/me")
-    %{name: user["name"], avatar: user["picture"]}
-  end
-
-
-  defp create_user(conn, %{"name" => name, "id" => id}) do
-    # if there is a user.goodle_id that is equal to the id received from Google API call
-    # then set = user
-    user = Repo.one(User.get_by_google_id(id))
-
-    # [work in progress] if no user with that google id exist then create a new user in db
-    # I think the recent update to elixir has a better way of handling nested case statements
-    user_params = %{
-      user: name,
-      id: id
-    }
-
-    changeset = User.changeset(%Billing.User{}, user_params)
-    case Repo.insert(changeset) do
-      {:ok, user} ->
-        conn
-    end
-  end
+    #|> send_resp(:ok, "you have logged in")
 end

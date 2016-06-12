@@ -28,9 +28,12 @@ defmodule Billing.Router do
   scope "/auth", Billing do
     pipe_through :spa
 
-    get "/", AuthController, :index
+    get "/login", AuthController, :login
     get "/callback", AuthController, :callback
-    get "/logout", AuthController, :delete
+    get "/logout", AuthController, :logout
+
+    get "/calendar", AuthController, :calendar_access
+    get "/offline", AuthController, :offline_access
   end
 
   # Other scopes may use custom stacks.

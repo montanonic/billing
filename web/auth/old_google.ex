@@ -1,4 +1,4 @@
-defmodule Billing.GoogleAuth do
+defmodule Old.Billing.GoogleAuth do
   @moduledoc """
   An OAuth2 strategy for Google.
   """

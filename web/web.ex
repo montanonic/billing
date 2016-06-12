@@ -20,6 +20,7 @@ defmodule Billing.Web do
     quote do
       use Ecto.Schema
 
+      alias Billing.Repo
       import Ecto
       import Ecto.Changeset
       import Ecto.Query

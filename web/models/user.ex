@@ -16,6 +16,10 @@ defmodule Billing.User do
     timestamps
   end
 
+  def new do
+    %Billing.User{}
+  end
+
   @doc """
   Builds a changeset based on the `struct` and `params`.
   """
@@ -25,7 +29,12 @@ defmodule Billing.User do
       ~w|identity refresh_token name given_name family_name google_email
         preferred_email|a)
     |> validate_required(
-      ~w|identity refresh_token name google_email|a)
+      ~w|identity name google_email|a)
+  end
+
+  def create_new_user(params) do
+    changeset(new, params)
+    |> Repo.insert
   end
 
   #def get_by_google_id(google_id) do

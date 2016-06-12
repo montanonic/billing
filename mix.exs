@@ -19,7 +19,7 @@ defmodule Billing.Mixfile do
   def application do
     [mod: {Billing, []},
      applications: [:phoenix, :phoenix_pubsub, :phoenix_html, :cowboy, :logger, :gettext,
-                    :phoenix_ecto, :postgrex, :httpoison, :oauth2]]
+                    :phoenix_ecto, :postgrex, :httpoison, :oauth2, :joken]]
   end
 
   # Specifies which paths to compile per environment.
@@ -42,6 +42,7 @@ defmodule Billing.Mixfile do
      {:absinthe, "~> 1.1"},
      {:absinthe_plug, "~> 1.1"},
      {:oauth2, "~> 0.6.0"},
+     {:joken, "~> 1.2"},
     ]
   end
 

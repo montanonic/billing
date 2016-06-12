@@ -8427,7 +8427,10 @@ var _user$project$Billing$update = F2(
 		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
 	});
 var _user$project$Billing$baseUrl = 'http://localhost:4000';
-var _user$project$Billing$loginUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth');
+var _user$project$Billing$loginUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth/login');
+var _user$project$Billing$accessCalendarUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth/calendar');
+var _user$project$Billing$offlineAccessUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth/offline');
+var _user$project$Billing$logoutUrl = A2(_elm_lang$core$Basics_ops['++'], _user$project$Billing$baseUrl, '/auth/logout');
 var _user$project$Billing$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -8443,7 +8446,37 @@ var _user$project$Billing$view = function (model) {
 					]),
 				_elm_lang$core$Native_List.fromArray(
 					[
-						_elm_lang$html$Html$text('Sign in with Google')
+						_elm_lang$html$Html$text('Sign in or create an account through Google; ')
+					])),
+				A2(
+				_elm_lang$html$Html$a,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$href(_user$project$Billing$accessCalendarUrl)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Authorize calendar access; ')
+					])),
+				A2(
+				_elm_lang$html$Html$a,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$href(_user$project$Billing$offlineAccessUrl)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Authorize offline access; ')
+					])),
+				A2(
+				_elm_lang$html$Html$a,
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html_Attributes$href(_user$project$Billing$logoutUrl)
+					]),
+				_elm_lang$core$Native_List.fromArray(
+					[
+						_elm_lang$html$Html$text('Logout')
 					]))
 			]));
 };
