@@ -36,7 +36,8 @@ defmodule Billing.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_billing_key",
-    signing_salt: "s5SB8gLb"
+    signing_salt: "s5SB8gLb",
+    encryption_salt: "8Gg0L6Fd3oEvHIEJlkYl/6FkcGDHM5avJLSXEs2v5jc="
 
   plug Billing.Router
 end

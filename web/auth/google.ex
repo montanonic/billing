@@ -356,7 +356,23 @@ defmodule Billing.GoogleAuth do
         {:new_user, new_user, response["access_token"]}
 
       user ->
+        # see @explanation below
+        if token = response["refresh_token"] do
+          user
+          |> Billing.GoogleAPI.RefreshToken.put_refresh_token!(token)
+        end
+
         {:existing_user, user, response["access_token"]}
     end
   end
+  @explanation """
+  The `if` case above will only trigger if an existing user has revoked their
+  refresh token at some point, as by logging in (which requires consent for
+  offline access) a refresh token will be returned by the response.
+
+  If a user has removed our app permissions, or we have revoked their tokens (on
+  behalf of the user or otherwise), we must ensure that the user's session is
+  terminated and that they must log-in again, forcing them to either reconsent
+  to our authorization requests, or cease to use our services.
+  """
 end

@@ -3,6 +3,10 @@ defmodule Billing.Auth do
   @behaviour Plug
   alias Billing.User
 
+  ###
+  # CALLBACKS
+  ###
+
   @doc """
   Init takes a set of options and initializes it.
 
@@ -19,5 +23,20 @@ defmodule Billing.Auth do
     user_id = get_session(conn, :user_id)
     user = user_id && repo.get(Billing.User, user_id)
     assign(conn, :current_user, user)
+  end
+
+  ###
+  # UTILITIES
+  ###
+
+  # This is probably not how we'd do things, but...
+  def authenticate(conn) do
+    if conn.assigns.current_user do
+      conn
+    else
+      conn
+      |> send_resp(401, "authorization required")
+      |> halt
+    end
   end
 end

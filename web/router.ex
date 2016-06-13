@@ -31,7 +31,7 @@ defmodule Billing.Router do
 
     get "/login", AuthController, :login
     get "/callback", AuthController, :callback
-    delete "/logout", AuthController, :logout
+    get "/logout", AuthController, :logout
   end
 
   # Other scopes may use custom stacks.

@@ -13,18 +13,30 @@ defmodule Billing.AuthController do
   with consent for offline access to those resources.
   """
   def login(conn, _params) do
-    GoogleAuth.redirect_to_secure_authorization_url(conn,
-      GoogleAuth.registration_params
-    )
+    if conn.assigns.current_user do
+      conn
+      |> send_resp(:ok, "already logged-in")
+
+    else
+      GoogleAuth.redirect_to_secure_authorization_url(conn,
+        GoogleAuth.registration_params
+      )
+    end
   end
 
   @doc """
   Logs the user out by dropping their session.
   """
   def logout(conn, _params) do
-    conn
-    |> configure_session(drop: true)
-    |> send_resp(:ok, "logged out")
+    unless conn.assigns.current_user do
+      conn
+      |> send_resp(:ok, "already logged-out")
+
+    else
+      conn
+      |> configure_session(drop: true)
+      |> send_resp(:ok, "logged out")
+    end
   end
 
   @doc """

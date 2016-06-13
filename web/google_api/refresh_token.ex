@@ -19,7 +19,7 @@ defmodule Billing.GoogleAPI.RefreshToken do
     "Host" => "www.googleapis.com",
     "Content-Type" => "application/x-www-form-urlencoded",
     }
-  def get_access_token(refresh_token) do
+  def get_access_token!(refresh_token) do
     parameters =
       %{"refresh_token" => refresh_token,
         "client_id" => @client_id,
@@ -44,8 +44,15 @@ defmodule Billing.GoogleAPI.RefreshToken do
   depending on what rights a user has/does not have when their subscription
   expires, we may want to revoke a token then as well.
   """
-  def revoke_token(token) do
+  def revoke_token!(token) do
     revoke_url = "https://accounts.google.com/o/oauth2/revoke?token=#{token}"
     HTTPoison.get!(revoke_url)
+  end
+
+  @doc """
+  Replaces a user's refresh token with a new one.
+  """
+  def put_refresh_token!(user, refresh_token) do
+    Billing.Repo.update!(user, refresh_token: refresh_token)
   end
 end
