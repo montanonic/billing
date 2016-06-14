@@ -1,4 +1,4 @@
-defmodule Billing.GoogleAPI.RefreshToken do
+defmodule Billing.GoogleAuth.RefreshToken do
   @moduledoc """
   Using a Refresh Token:
   https://developers.google.com/identity/protocols/OAuth2WebServer#offline

@@ -359,7 +359,7 @@ defmodule Billing.GoogleAuth do
         # see @explanation below
         if token = response["refresh_token"] do
           user
-          |> Billing.GoogleAPI.RefreshToken.put_refresh_token!(token)
+          |> Billing.GoogleAuth.RefreshToken.put_refresh_token!(token)
         end
 
         {:existing_user, user, response["access_token"]}
