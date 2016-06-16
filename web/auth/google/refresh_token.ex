@@ -43,6 +43,8 @@ defmodule Billing.GoogleAuth.RefreshToken do
   This is useful only in response to a user requesting that we do this, and
   depending on what rights a user has/does not have when their subscription
   expires, we may want to revoke a token then as well.
+
+  If we *ever* delete a User, we must use this function.
   """
   def revoke_token!(token) do
     revoke_url = "https://accounts.google.com/o/oauth2/revoke?token=#{token}"

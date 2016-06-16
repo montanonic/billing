@@ -2,6 +2,16 @@ defmodule Billing.GoogleAPI.Calendar do
 
   @moduledoc """
   https://developers.google.com/google-apps/calendar/v3/reference/events/list#http-request
+
+  TODO: Turn this into a GenServer.
+
+  Because GenServers can hold onto state, we can properly chunk requests,
+  calling a limited number of calendar events each time (say, 200 or so, instead
+  of how ever many we get), and store them in phases on the backend, sending the
+  next request after the previous is properly stored.
+
+  Then we can set up a supervisor to watch over multiple GenServers to handle
+  Calendar fetching in parallel, for multiple clients at once.
   """
 
   @doc """
@@ -32,9 +42,7 @@ defmodule Billing.GoogleAPI.Calendar do
   When chained after `get_calendar_events`, will store the events on the
   backend,
   """
-  def store_calendar_events(events_list) do
-
-  end
+  #defdelegate store_calendar_events(events_list), to: Billing.CalendarEvent
 
   @doc """
 
@@ -50,25 +58,30 @@ defmodule Billing.GoogleAPI.Calendar do
   """
   def store_user_calendar_events(user, calendar_id \\ "primary",
     params \\ %{}
-    ) do
+  ) do
 
     sync_token_name =
       "calendar_events_list"
 
     request_params =
-      %{"syncToken" => user["sync_tokens"][sync_token_name],
-      }
+      params
+      |> Map.merge(%{"syncToken" => user.sync_tokens[sync_token_name]})
 
+    # fetch an EventsList using the user's refresh token.
+    # TODO: This does not handle requesting in chunks; such a behavior should be
+    # added, ideally as a GenServer for calendar requesting, storing state.
+    # This will only work for fetching up to 2500 calendar events in the
+    # meantime, which feels wrong.
     events_list =
       Billing.GoogleAuth.RefreshToken.get_access_token!(user.refresh_token)
       |> get_calendar_events(calendar_id, request_params)
 
-
-    # use Ecto.Multi for the following two commands.
+    # TODO: make the following two commands a transaction
 
     events_list
-    |> store_calendar_events
+    |> Billing.CalendarEvent.store_calendar_events(user.id)
 
+    # insert a new sync token if existing in the `events_list`
     if next_sync_token = events_list["nextSyncToken"] do
       Billing.User.put_sync_token(user, %{sync_token_name => next_sync_token})
     end
