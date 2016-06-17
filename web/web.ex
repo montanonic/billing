@@ -16,6 +16,14 @@ defmodule Billing.Web do
   below.
   """
 
+  def resolver do
+    quote do
+      alias Billing.Repo
+      alias Billing.Resolver.Helpers
+      alias Ecto.Changeset
+    end
+  end
+
   def model do
     quote do
       use Ecto.Schema

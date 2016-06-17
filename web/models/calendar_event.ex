@@ -37,7 +37,8 @@ defmodule Billing.CalendarEvent do
     end)
     # But here's the (truncated) error we get if we try using
     # `Repo.insert_all(Billing.CalendarEvent, calendar_events)`:
-    # ** (Protocol.UndefinedError) protocol Enumerable not implemented for
-    # #Ecto.Changeset ...
+    # `** (Protocol.UndefinedError) protocol Enumerable not implemented for
+    # #Ecto.Changeset ...`
   end
+
 end

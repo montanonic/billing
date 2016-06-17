@@ -27,7 +27,7 @@ defmodule Billing.GoogleAPI.Calendar do
     request_headers =
       [ {"Authorization", "Bearer #{access_token}"} ]
     params =
-      %{"maxResults" => 2500,
+      %{"maxResults" => 2500, # we need to "paginate" in the future
         "singleEvents" => true,
       } |> Map.merge(params)
     url =
@@ -56,7 +56,7 @@ defmodule Billing.GoogleAPI.Calendar do
   ensures that we only fetch each event exactly once, unless changes are made to
   it.
   """
-  def store_user_calendar_events(user, calendar_id \\ "primary",
+  def fetch_and_store_new_calendar_events(user, calendar_id \\ "primary",
     params \\ %{}
   ) do
 

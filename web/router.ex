@@ -18,6 +18,7 @@ defmodule Billing.Router do
     plug :accepts, ["json"]
     plug :fetch_session
     plug Billing.Auth, repo: Billing.Repo
+    plug Billing.GraphQL.Context
   end
 
   scope "/", Billing do
@@ -34,8 +35,11 @@ defmodule Billing.Router do
     get "/logout", AuthController, :logout
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Billing do
-  #   pipe_through :api
-  # end
+  forward "/api", Absinthe.Plug,
+    schema: Billing.Schema
+
+  if Mix.env == :dev do
+    forward "/graphiql", Absinthe.Plug.GraphiQL,
+      schema: Billing.Schema
+  end
 end

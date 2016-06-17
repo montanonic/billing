@@ -54,6 +54,8 @@ defmodule Billing.AuthController do
     conn
     |> put_session(:user_id, user.id)
     |> put_session(:access_token, access_token)
-    |> send_resp(:ok, Atom.to_string existing_user_or_new_user)
+    # include in our response information about if this is a first-time user
+    # or a current user
+    |> send_resp(:ok, Atom.to_string(existing_user_or_new_user))
   end
 end
