@@ -33,7 +33,8 @@ defmodule Billing.CalendarEvent do
 
     # Insert each event into the database. This is probably fairly innefficient.
     Enum.each(calendar_events,
-      fn event -> Repo.insert(event)
+      fn event ->
+        Repo.insert(event)
     end)
     # But here's the (truncated) error we get if we try using
     # `Repo.insert_all(Billing.CalendarEvent, calendar_events)`:

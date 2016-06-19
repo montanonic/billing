@@ -60,6 +60,7 @@ defmodule Billing.GoogleAPI.Calendar do
     params \\ %{}
   ) do
 
+    # update the user's synchronization token
     sync_token_name =
       "calendar_events_list"
 

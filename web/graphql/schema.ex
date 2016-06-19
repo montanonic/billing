@@ -27,8 +27,8 @@ defmodule Billing.Schema do
         for fetching new events which fit the query from the Calendar API."
       arg :search_terms, list_of(:string)
 
-      @desc ~s|Which of the user's calendars to search in. Defaults to their\
-        "primary" calendar.|
+      @desc "Which of the user's calendars to search in. Defaults to their\
+        \"primary\" calendar."
       arg :calendar, :string
 
       @desc "Only query events which start after the given datetime."
@@ -36,5 +36,7 @@ defmodule Billing.Schema do
 
       resolve &Billing.CalendarEventResolver.search_and_fetch/2
     end
+
+  end
 
 end

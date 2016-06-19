@@ -26,7 +26,7 @@ defmodule Billing.GraphQL.Context do
       }
 
     conn
-    |> put_private(:absinthe, %{context: context)
+    |> put_private(:absinthe, %{context: context})
   end
 
 end

@@ -2,8 +2,6 @@ defmodule Billing.Schema.Types do
 
   use Absinthe.Schema.Notation
 
-
-
   @desc """
 
   See https://developers.google.com/google-apps/calendar/v3/reference/events for

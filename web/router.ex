@@ -35,11 +35,19 @@ defmodule Billing.Router do
     get "/logout", AuthController, :logout
   end
 
-  forward "/api", Absinthe.Plug,
-    schema: Billing.Schema
+  scope "/api" do
+    pipe_through :spa
+
+    forward "/", Absinthe.Plug,
+      schema: Billing.Schema
+  end
 
   if Mix.env == :dev do
-    forward "/graphiql", Absinthe.Plug.GraphiQL,
+    scope "/graphiql" do
+      pipe_through :spa
+
+    forward "/", Absinthe.Plug.GraphiQL,
       schema: Billing.Schema
+    end
   end
 end
