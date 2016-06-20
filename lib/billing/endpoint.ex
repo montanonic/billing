@@ -27,8 +27,8 @@ defmodule Billing.Endpoint do
     pass: ["*/*"],
     json_decoder: Poison
 
-  plug Plug.MethodOverride
-  plug Plug.Head
+  #plug Plug.MethodOverride
+  #plug Plug.Head
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
@@ -36,7 +36,8 @@ defmodule Billing.Endpoint do
   plug Plug.Session,
     store: :cookie,
     key: "_billing_key",
-    signing_salt: "s5SB8gLb"
+    signing_salt: "s5SB8gLb",
+    encryption_salt: "8Gg0L6Fd3oEvHIEJlkYl/6FkcGDHM5avJLSXEs2v5jc="
 
   plug Billing.Router
 end

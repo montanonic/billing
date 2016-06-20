@@ -36,12 +36,17 @@ init _ =
   )
 
 
+baseUrl : String
 baseUrl =
     "http://localhost:4000"
 
-
+loginUrl : String
 loginUrl =
-    baseUrl ++ "/auth"
+    baseUrl ++ "/auth/login"
+
+logoutUrl : String
+logoutUrl =
+    baseUrl ++ "/auth/logout"
 
 
 
@@ -88,7 +93,8 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
   div []
-    [ a [ href loginUrl ] [ text "Sign in with Google" ]
+    [ a [ href loginUrl ] [ text "Sign in or create an account through Google; " ]
+    , a [ href logoutUrl ] [ text "Logout" ]
     ]
 
 

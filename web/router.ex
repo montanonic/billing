@@ -7,6 +7,7 @@ defmodule Billing.Router do
     plug :fetch_flash
     plug :protect_from_forgery
     plug :put_secure_browser_headers
+    plug Billing.Auth, repo: Billing.Repo
   end
 
   pipeline :api do
@@ -17,6 +18,7 @@ defmodule Billing.Router do
     plug :accepts, ["json"]
     plug :fetch_session
     plug Billing.Auth, repo: Billing.Repo
+    plug Billing.GraphQL.Context
   end
 
   scope "/", Billing do
@@ -28,13 +30,24 @@ defmodule Billing.Router do
   scope "/auth", Billing do
     pipe_through :spa
 
-    get "/", AuthController, :index
+    get "/login", AuthController, :login
     get "/callback", AuthController, :callback
-    delete "/logout", AuthController, :delete
+    get "/logout", AuthController, :logout
   end
 
-  # Other scopes may use custom stacks.
-  # scope "/api", Billing do
-  #   pipe_through :api
-  # end
+  scope "/api" do
+    pipe_through :spa
+
+    forward "/", Absinthe.Plug,
+      schema: Billing.Schema
+  end
+
+  if Mix.env == :dev do
+    scope "/graphiql" do
+      pipe_through :spa
+
+    forward "/", Absinthe.Plug.GraphiQL,
+      schema: Billing.Schema
+    end
+  end
 end

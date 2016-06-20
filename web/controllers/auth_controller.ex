@@ -5,75 +5,57 @@ defmodule Billing.AuthController do
   # See https://developers.google.com/+/web/api/rest/oauth#authorization-scopes
   # for information on scopes.
 
-  def index(conn, _params) do
-    redirect conn,
-      external: GoogleAuth.authorization_url!(scope: "profile")
+  @doc """
+  Authenticates the user, and if successfuly logs the user in if they already
+  have an account, and otherwise creates a new account.
+
+  Requires consent for read-only access to a user's profile and calendar, along
+  with consent for offline access to those resources.
+  """
+  def login(conn, _params) do
+    if conn.assigns.current_user do
+      conn
+      |> send_resp(:ok, "already logged-in")
+
+    else
+      GoogleAuth.redirect_to_secure_authorization_url(conn,
+        GoogleAuth.registration_params
+      )
+    end
   end
 
   @doc """
   Logs the user out by dropping their session.
   """
-  def delete(conn, _params) do
-    conn
-    |> configure_session(drop: true)
-    |> send_resp(:ok, "logged out")
+  def logout(conn, _params) do
+    unless conn.assigns.current_user do
+      conn
+      |> send_resp(:ok, "already logged-out")
+
+    else
+      conn
+      |> configure_session(drop: true)
+      |> send_resp(:ok, "logged out")
+    end
   end
 
   @doc """
-
   This is the the callback URL that the OAuth2 provider will redirect the user
-  back to with a `code` that will be used to request an access token. The access
-  token will then be used to access protected resources on behalf of the user.
+  back to with a `code` that will be used to request an access token, along with
+  profile information to login or register a user.
 
+  If the callback procedure is successful, we store the user_id in the client's
+  session, along with the access token.
   """
-  def callback(conn, %{"code" => code}) do
-    # Exchange an auth code for an access token
-    token = GoogleAuth.get_token!(code: code)
+  def callback(conn, params) do
+    {existing_user_or_new_user, user, access_token} =
+      GoogleAuth.callback_procedure(conn, params)
 
-    # Request the user's data with the access token
-    user = {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
-      "https://www.googleapis.com/plus/v1/people/me")
-
-
-    # Store the user in the session under `:current_user'.
-    # In most cases, we'd probably just store the user's ID that can be used
-    # to fetch from the database. In this case, since this example app has no
-    # database, I'm just storing the user map.
-    #
-    # If you need to make additional resource requests, you may want to store
-    # the access token as well.
     conn
-    |> put_session(:current_user, user)
-    |> put_session(:access_token, token.access_token)
-    # assuming that user, allows access to basic data.. user["name"]
-    # if this is the case, I figured a private function to check/add a new user to our db
-    |> create_user(user)
-    |> send_resp(:ok, "you have logged in")
-  end
-
-  defp get_user!(token) do
-    {:ok, %{body: user}} = OAuth2.AccessToken.get(token,
-      "https://www.googleapis.com/plus/v1/people/me")
-    %{name: user["name"], avatar: user["picture"]}
-  end
-
-
-  defp create_user(conn, %{"name" => name, "id" => id}) do
-    # if there is a user.goodle_id that is equal to the id received from Google API call
-    # then set = user
-    user = Repo.one(User.get_by_google_id(id))
-
-    # [work in progress] if no user with that google id exist then create a new user in db
-    # I think the recent update to elixir has a better way of handling nested case statements
-    user_params = %{
-      user: name,
-      id: id
-    }
-
-    changeset = User.changeset(%Billing.User{}, user_params)
-    case Repo.insert(changeset) do
-      {:ok, user} ->
-        conn
-    end
+    |> put_session(:user_id, user.id)
+    |> put_session(:access_token, access_token)
+    # include in our response information about if this is a first-time user
+    # or a current user
+    |> send_resp(:ok, Atom.to_string(existing_user_or_new_user))
   end
 end
