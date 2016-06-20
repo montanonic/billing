@@ -23,8 +23,7 @@ defmodule Billing.Schema do
       Calendar. This ensures that you'll always have access to the latest\
       events."
     field :calendar_events, list_of(:calendar_event) do
-      @desc "Terms to filter the events by. Also used in the `q` request param\
-        for fetching new events which fit the query from the Calendar API."
+      @desc "Terms to filter the events by."
       arg :search_terms, list_of(:string)
 
       @desc "Which of the user's calendars to search in. Defaults to their\
@@ -32,7 +31,7 @@ defmodule Billing.Schema do
       arg :calendar, :string
 
       @desc "Only query events which start after the given datetime."
-      arg :starts_after, :string
+      arg :starts_after, :datetime
 
       resolve &Billing.CalendarEventResolver.search_and_fetch/2
     end

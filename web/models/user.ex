@@ -2,6 +2,9 @@ defmodule Billing.User do
   use Billing.Web, :model
 
   schema "users" do
+    # A unique identifier for an authenticated user. We use the Google
+    # Identity Platform's "sub" value for this currently, but we can expand
+    # this to work with more auethentication backends if needed.
     field :identity, :string
     field :refresh_token, :string
     field :name, :string

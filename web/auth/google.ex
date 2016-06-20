@@ -158,7 +158,7 @@ defmodule Billing.GoogleAuth do
     auth_url =
       %{"state" => token}
       |> Map.merge(params)
-      |> authorization_url
+      |> authorization_url()
 
     conn
     |> Plug.Conn.put_session(:anti_forgery_token, token)
@@ -198,12 +198,12 @@ defmodule Billing.GoogleAuth do
 
   @doc """
 
-  This function fulfills steps 3 and 4 of OpenIDConnect's server flow:
+  This function fulfills steps 3 and 5 of OpenIDConnect's server flow:
   https://developers.google.com/identity/protocols/OpenIDConnect#confirmxsrftoken
 
   OAuth2 works by first authenticating a user and obtaining their consent
   (which is what the Google OAuth2 server did in step two), and sending
-  the response back to the `redirect_uri` we specify in our `pre_config`.
+  the response back to the `redirect_uri` we specify in our `config`.
 
   That response will be one of the following two schemes (the `state` param
   will only be present if it was also present in the authorization url):
@@ -232,7 +232,7 @@ defmodule Billing.GoogleAuth do
     "Content-Type" => "application/x-www-form-urlencoded",
     }
   @spec callback_procedure!(String.t) ::
-    {:existing_user | :current_user, Billing.User.t, access_token} |
+    {:existing_user | :new_user, Billing.User.t, access_token} |
     {:error, String.t}
   def callback_procedure(conn, %{"code" => code, "state" => state}) do
     case Plug.Conn.get_session(conn, :anti_forgery_token) do
@@ -245,18 +245,12 @@ defmodule Billing.GoogleAuth do
     end
   end
 
-  # TODO: As stated in the doc above, we ought to make a log when this occurs,
+  # TODO: As stated in the doc above, we ought to make a log when  this occurs,
   # likely in our database itself, and then present the user with some UI to
   # explain why we need them to consent to those requirements. We could also
   # provide a link to a feedback area, if the user feels like they don't need
   # certain features of our application, for example, automated `bill_after`
   # reminders, and so in that case wouldn't need to grant us offline access.
-  #
-  # By only asking for consent when those features are absolutely required, we
-  # may save ourselves lost users. On the flip side, it may feel more intrusive
-  # to ask for email access, then for calendar access, then for offline access,
-  # if we suspect our market will want all of those features basically no matter
-  # what.
   def callback_procedure!(%{"error" => _}) do
     {:error, "access denied"}
   end
@@ -277,7 +271,7 @@ defmodule Billing.GoogleAuth do
   for more information on this, along with the `decode_id_token` function.
   """
   @spec get_authorization_response!(String.t) ::
-    {:existing_user | :current_user, Billing.User.t, access_token}
+    {:existing_user | :new_user, Billing.User.t, access_token}
   defp get_authorization_response!(code) do
     # params for making the callback request to exchange the authorization code
     # for an access token (and potentially a refresh token as well)
@@ -329,7 +323,7 @@ defmodule Billing.GoogleAuth do
   TODO: (maybe) Use Google oauth certs to actually verify this token.
   """
   @spec fetch_or_create_user!(String.t) ::
-    {:existing_user | :current_user, Billing.User.t, access_token}
+    {:existing_user | :new_user, Billing.User.t, access_token}
   defp fetch_or_create_user!(response) do
     # See the SO link on an `id_token` for context on "sub".
     %{"sub" => unique_identifier} = identity =

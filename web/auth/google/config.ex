@@ -17,6 +17,6 @@ defmodule Billing.GoogleAuth.Config do
   def config do
     Application.get_env(:billing, Billing.GoogleAuth)
     |> Keyword.merge(@config_routes)
-    |> Enum.into(Map.new)
+    |> Map.new
   end
 end

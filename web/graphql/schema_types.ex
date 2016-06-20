@@ -2,6 +2,18 @@ defmodule Billing.Schema.Types do
 
   use Absinthe.Schema.Notation
 
+  @desc "Date in `yyyy-m-d` format. Example: \"2016-6-20\"."
+  scalar :date do
+    parse &Timex.parse(&1, "{YYYY}-{M}-{D}")
+    serialize &Timex.format!(&1, "{YYYY}-{M}-{D}")
+  end
+
+  @desc "Datetime in ISOz format."
+  scalar :datetime do
+    parse &Timex.parse(&1, "{ISOz}")
+    serialize &Timex.format!(&1, "{ISOz}")
+  end
+
   @desc """
 
   See https://developers.google.com/google-apps/calendar/v3/reference/events for
@@ -22,9 +34,8 @@ defmodule Billing.Schema.Types do
   object :calendar_event do
     field :html_link, :string
 
-    # TODO:
-    field :created, :string # needs a `datetime` scalar
-    field :updated, :string # needs a `datetime` scalar
+    field :created, :datetime
+    field :updated, :datetime
 
     field :summary, :string
     field :description, :string
@@ -36,17 +47,15 @@ defmodule Billing.Schema.Types do
   end
 
   object :event_start do
-    # TODO:
-    field :date, :string # needs a `date` scalar
-    field :dateTime, :string # needs a `datetime` scalar
-    field :timeZone, :string
+    field :date, :date
+    field :date_time, :datetime
+    field :time_zone, :string
   end
 
   object :event_end do
-    # TODO:
-    field :date, :string # needs a `date` scalar
-    field :dateTime, :string # needs a `datetime` scalar
-    field :timeZone, :string
+    field :date, :date
+    field :date_time, :datetime
+    field :time_zone, :string
   end
 
 end

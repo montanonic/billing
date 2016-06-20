@@ -1,7 +1,8 @@
 defmodule Billing.CalendarEventResolver do
   use Billing.Web, :resolver
   alias Billing.CalendarEvent
-  alias Billing.GoogleAPI.Calendar, as: CalendarAPI
+  alias Billing.GoogleAPI.StoreCalendarEvents, as: CalendarAPI
+  import Ecto.Query, only: [from: 2]
 
   def search(args, _info) do
 
@@ -15,24 +16,31 @@ defmodule Billing.CalendarEventResolver do
 
       user ->
         store_new_events(args, user)
+        # then search events in the database
+        # very rough implementation below
+        #   def search_calendar_events(events_list, args) do
+        #    from(Billing.CalendarEvent in query,
+        #    where: fragment("?->>'startsAfter' == ?", args.
+
     end
   end
 
+  @docp """
+  Retrieves any new events from Google API and stores them in the database. Uses
+  the arguments set in the graphql query to more selectively fetch events
+  """
   defp store_new_events(args, user) do
-    query_search_terms? =
-      if search_terms = args.search_terms do
-        # turn list into space-separated string, which is what CalAPI requires
-        # for the `q` param.
-        Enum.join(search_terms, " ")
-        |> (& %{"q" => &1}).()
-      end
 
-    #  search_terms = args.search_terms
-
-    # Use the `:starts_after` arg in the query to google API, but don't pull
-    # events by search terms, instead, fetch all of them.
-
-    # Map.merge(
+    # https://developers.google.com/google-apps/calendar/v3/reference/events/list
+    params =
+      %{"timeMin" =>
+          # if the `starts_after` arg isn't null, format it according to what
+          # the CalendarAPI expects
+          args.starts_after && Timex.format!(args.starts_after, "{ISOz}")
+      }
+      # remove any entries in the Map with nil values
+      |> Enum.filter(fn {k,v} -> not is_nil(v) end)
+      |> Map.new
 
     # Update the database with any new calendar entries.
     # We could return them here instead of refetching from the DB in the next
@@ -43,10 +51,8 @@ defmodule Billing.CalendarEventResolver do
     CalendarAPI.fetch_and_store_new_calendar_events(
       user,
       (args.calendar || "primary"), # calendar to search in
-      (query_search_terms? || %{}) # the request params
+      params # the request params
     )
-
-    # TODO: Search the DB and return the results of this query.
   end
 
 end

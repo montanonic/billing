@@ -1,6 +1,5 @@
 defmodule Billing.CalendarEvent do
   use Billing.Web, :model
-#  @derive [Enumerable]
 
   schema "calendar_events" do
     belongs_to :user, Billing.User
@@ -32,10 +31,7 @@ defmodule Billing.CalendarEvent do
     # TODO: Use Repo.insert_all instead
 
     # Insert each event into the database. This is probably fairly innefficient.
-    Enum.each(calendar_events,
-      fn event ->
-        Repo.insert(event)
-    end)
+    Enum.each(calendar_events, &Repo.insert/1)
     # But here's the (truncated) error we get if we try using
     # `Repo.insert_all(Billing.CalendarEvent, calendar_events)`:
     # `** (Protocol.UndefinedError) protocol Enumerable not implemented for

@@ -1,6 +1,8 @@
-defmodule Billing.GoogleAPI.Calendar do
+defmodule Billing.GoogleAPI.StoreCalendarEvents do
 
   @moduledoc """
+  Used to retrieve CalendarEvents from GoogleAPI and store them in the database.
+
   https://developers.google.com/google-apps/calendar/v3/reference/events/list#http-request
 
   TODO: Turn this into a GenServer.
@@ -13,36 +15,6 @@ defmodule Billing.GoogleAPI.Calendar do
   Then we can set up a supervisor to watch over multiple GenServers to handle
   Calendar fetching in parallel, for multiple clients at once.
   """
-
-  @doc """
-  If successful, returns an `events_list` response in parsed json format.
-
-  Defaults the following request parameters as follows:
-
-      `"maxResults" => 2500` # the maximum allowed
-      `"singleEvents" => true`
-  """
-  def get_calendar_events(access_token, calendar_id \\ "primary",
-  params \\ %{}) do
-    request_headers =
-      [ {"Authorization", "Bearer #{access_token}"} ]
-    params =
-      %{"maxResults" => 2500, # we need to "paginate" in the future
-        "singleEvents" => true,
-      } |> Map.merge(params)
-    url =
-      "https://www.googleapis.com/calendar/v3/calendars/#{calendar_id}/events"
-
-    HTTPoison.get!(url, request_headers, params: params)
-    |> (&(&1.body)).()
-    |> Poison.decode!
-  end
-
-  @doc """
-  When chained after `get_calendar_events`, will store the events on the
-  backend,
-  """
-  #defdelegate store_calendar_events(events_list), to: Billing.CalendarEvent
 
   @doc """
 
@@ -88,6 +60,30 @@ defmodule Billing.GoogleAPI.Calendar do
     end
 
     :ok
+  end
+
+  @docp """
+  If successful, returns an `events_list` response in parsed json format.
+
+  Defaults the following request parameters as follows:
+
+      `"maxResults" => 2500` # the maximum allowed
+      `"singleEvents" => true`
+  """
+  defp get_calendar_events(access_token, calendar_id \\ "primary",
+  params \\ %{}) do
+    request_headers =
+      [ {"Authorization", "Bearer #{access_token}"} ]
+    params =
+      %{"maxResults" => 2500, # we need to "paginate" in the future
+        "singleEvents" => true,
+      } |> Map.merge(params)
+    url =
+      "https://www.googleapis.com/calendar/v3/calendars/#{calendar_id}/events"
+
+    HTTPoison.get!(url, request_headers, params: params)
+    |> (&(&1.body)).()
+    |> Poison.decode!
   end
 
 end
